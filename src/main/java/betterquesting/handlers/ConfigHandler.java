@@ -24,7 +24,8 @@ public class ConfigHandler
 		BQ_Settings.useBookmark = config.getBoolean("Use Quest Bookmark", Configuration.CATEGORY_GENERAL, true, "Jumps the user to the last opened quest");
 		BQ_Settings.guiWidth = config.getInt("Max GUI Width", Configuration.CATEGORY_GENERAL, -1, -1, Integer.MAX_VALUE, "Clamps the max UI width (-1 to disable)");
 		BQ_Settings.guiHeight = config.getInt("Max GUI Height", Configuration.CATEGORY_GENERAL, -1, -1, Integer.MAX_VALUE, "Clamps the max UI height (-1 to disable)");
-		
+		BQ_Settings.viewMode = config.getBoolean("View mode", Configuration.CATEGORY_GENERAL, true, "If view mode enabled, User can view all quests");
+
 		config.save();
 	}
 }

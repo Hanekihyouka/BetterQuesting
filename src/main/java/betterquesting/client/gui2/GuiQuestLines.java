@@ -8,6 +8,7 @@ import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.IQuestLine;
 import betterquesting.api.questing.IQuestLineEntry;
+import betterquesting.api.storage.BQ_Settings;
 import betterquesting.api2.cache.QuestCache;
 import betterquesting.api2.client.gui.GuiScreenCanvas;
 import betterquesting.api2.client.gui.controls.IPanelButton;
@@ -40,12 +41,14 @@ import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.QuestTranslation;
 import betterquesting.client.gui2.editors.GuiQuestLinesEditor;
 import betterquesting.client.gui2.editors.designer.GuiDesigner;
+import betterquesting.handlers.ConfigHandler;
 import betterquesting.network.handlers.NetQuestAction;
 import betterquesting.questing.QuestDatabase;
 import betterquesting.questing.QuestLineDatabase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.Tuple;
+import net.minecraftforge.common.config.Configuration;
 import org.lwjgl.util.vector.Vector4f;
 
 import java.util.ArrayList;
@@ -79,12 +82,15 @@ public class GuiQuestLines extends GuiScreenCanvas implements IPEventListener, I
     private PanelButton claimAll;
     
     private static boolean trayLock = false;
+    private static boolean viewMode;
     
     private final List<PanelButtonStorage<DBEntry<IQuestLine>>> btnListRef = new ArrayList<>();
     
     public GuiQuestLines(GuiScreen parent)
     {
         super(parent);
+        viewMode = BQ_Settings.viewMode;
+
     }
     
     @Override
@@ -262,7 +268,20 @@ public class GuiQuestLines extends GuiScreenCanvas implements IPEventListener, I
         });
         btnTrayLock.setTooltip(Collections.singletonList(QuestTranslation.translate("betterquesting.btn.lock_tray")));
         cvBackground.addPanel(btnTrayLock);
-        
+
+        // View Mode Button
+        PanelButton btnViewMode = new PanelButton(new GuiTransform(GuiAlign.TOP_LEFT, 8, 104, 32, 16, -2), -1, "").setIcon(viewMode ? PresetIcon.ICON_VISIBILITY_NORMAL.getTexture() : PresetIcon.ICON_VISIBILITY_HIDDEN.getTexture());
+        btnViewMode.setClickAction((b) -> {
+            viewMode = !viewMode;
+            b.setIcon(viewMode ? PresetIcon.ICON_VISIBILITY_NORMAL.getTexture() : PresetIcon.ICON_VISIBILITY_HIDDEN.getTexture());
+            ConfigHandler.config.get(Configuration.CATEGORY_GENERAL, "View mode", false).set(viewMode);
+            ConfigHandler.config.save();
+            ConfigHandler.initConfigs();
+            refreshGui();
+        });
+        btnViewMode.setTooltip(Collections.singletonList(QuestTranslation.translate("betterquesting.btn.view_mode")));
+        cvBackground.addPanel(btnViewMode);
+
         // === CHAPTER VIEWPORT ===
         
         CanvasQuestLine oldCvQuest = cvQuest;
@@ -344,6 +363,10 @@ public class GuiQuestLines extends GuiScreenCanvas implements IPEventListener, I
                 show = true;
                 unlocked = true;
                 complete = true;
+            }
+
+            if(viewMode) {
+                show = true;
             }
             
             for(DBEntry<IQuestLineEntry> qID : ql.getEntries())
